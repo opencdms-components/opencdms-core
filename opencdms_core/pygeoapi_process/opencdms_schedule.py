@@ -22,7 +22,6 @@ __version__ = "0.0.1"
 
 import logging
 import subprocess
-from pathlib import Path
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 
 LOGGER = logging.getLogger(__name__)
@@ -47,18 +46,9 @@ PROCESS_METADATA = {
         }
     ],
     "inputs": {
-        "job_endpoint": {
-            "title": "Deployment Key",
-            "description": "OpenAPI deployment key",
-            "schema": {"type": "string"},
-            "minOccurs": 1,
-            "maxOccurs": 1,
-            "metadata": None,
-            "keywords": [],
-        },
-        "output_dir": {
-            "title": "Output directory",
-            "description": "Directory where backup file should be stored.",
+        "command": {
+            "title": "Command",
+            "description": "Command to run using crontab",
             "schema": {"type": "string"},
             "minOccurs": 1,
             "maxOccurs": 1,
@@ -95,8 +85,16 @@ PROCESS_METADATA = {
     },
     "example": {
         "inputs": {
-            "deployment_key": "test-database",
-            "output_dir": "/home/faysal/PycharmProjects/opencdms-backup",
+            "command": (
+                'curl -X POST'
+                ' http://localhost:5000/processes/opencdms_backup/execution'
+                r' -H \"accept: application/json\" -H \"Content-Type:'
+                r' application/json\" -d \'{\"inputs\": {\"deployment_key\":'
+                r' \"test-database\",\"output_dir\":'
+                r' \"/home/faysal/PycharmProjects/opencdms-backup\"},\"mode\":'
+                r' \"async\"}\''
+            ),
+            "cron_expression": "* * * * *",
         }
     },
 }
@@ -104,21 +102,20 @@ PROCESS_METADATA = {
 
 def existing_cron_jobs():
     process = subprocess.Popen(
-        ["sh", "-c", "crontab -l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ["sh", "-c", "crontab -l"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     stdout, stderr = process.communicate()
     return set(
         filter(
             lambda x: bool(x),
-            [
-                c.strip()
-                for c in stdout.decode("utf-8").split("\n")
-            ]
+            [c.strip() for c in stdout.decode("utf-8").split("\n")],
         )
     )
 
 
-class OpenCDMSBackup(BaseProcessor):
+class OpenCDMSSchedule(BaseProcessor):
     def __init__(self, processor_def):
         """
         Initialize object
@@ -131,12 +128,15 @@ class OpenCDMSBackup(BaseProcessor):
     def execute(self, data):
         mimetype = "application/json"
         try:
-            job_url = data["job_url"]
             cron_expression = data.get("cron_expression", "00 00 * * *")
-            crontab_entry = f"{cron_expression} curl {job_url}"
+            command = data["command"]
+
+            crontab_entry = f"{cron_expression} {command}"
 
             if crontab_entry in existing_cron_jobs():
-                raise ProcessorExecuteError("Cron job already exists for same schedule.")
+                raise ProcessorExecuteError(
+                    "Cron job already exists for same schedule."
+                )
 
             commands = [
                 ["sh", "-c", "crontab -l > tmp_cron"],
@@ -151,7 +151,7 @@ class OpenCDMSBackup(BaseProcessor):
 
             output = {
                 "message": "Process scheduled successfully.",
-                "crontab_entry": crontab_entry
+                "crontab_entry": crontab_entry,
             }
 
             for command in commands:

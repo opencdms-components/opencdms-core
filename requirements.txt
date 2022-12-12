@@ -1,1 +1,2 @@
 pygeoapi==0.13.0
+Flask-Cors==3.0.10

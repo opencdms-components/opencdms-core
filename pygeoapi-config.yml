@@ -1,0 +1,50 @@
+server:
+  bind:
+      host: 0.0.0.0
+      port: 5050
+  url: http://localhost:5050/
+  mimetype: application/json; charset=UTF-8
+  encoding: utf-8
+  language: en-US
+  gzip: false
+  cors: true
+  pretty_print: true
+  limit: 10
+
+  manager:
+      name: TinyDB
+      connection: ./db/opencdms-schedule.db
+      output_dir: ./db
+
+logging:
+    level: INFO
+
+metadata:
+    identification:
+        title: OpenCDMS Backup Manager Server
+        description: Exposes a process that can manage periodic backup tasks
+        keywords:
+            - data
+            - api
+        keywords_type: theme
+        terms_of_service: https://www.apache.org/licenses/LICENSE-2.0
+        url: https://github.com/opencdms-processes/opencdms-backup
+    license:
+        name: APACHE LICENSE, VERSION 2.0
+        url: https://www.apache.org/licenses/LICENSE-2.0
+    provider:
+        name: OpenCDMS
+        url: https://opencdms.org
+    contact:
+        name: Admin, OpenCDMS
+        position: Admin
+        address: England
+        country: England
+        email: info@opencdms.org
+
+resources:
+  opencdms_schedule:
+    type: process
+    processor:
+      name: opencdms_core.pygeoapi_process.opencdms_schedule.OpenCDMSSchedule
+
