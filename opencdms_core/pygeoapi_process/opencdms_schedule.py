@@ -130,7 +130,6 @@ class OpenCDMSSchedule(BaseProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
 
     def execute(self, data):
-        print(data["command"])
         mimetype = "application/json"
         try:
             cron_expression = data.get("cron_expression", "00 00 * * *")
@@ -138,19 +137,16 @@ class OpenCDMSSchedule(BaseProcessor):
 
             crontab_entry = r"{} {}".format(cron_expression, command)
 
-            print(crontab_entry)
-
             if crontab_entry in existing_cron_jobs():
                 raise ProcessorExecuteError(
                     "Cron job already exists for same schedule."
                 )
-
             commands = [
                 ["sh", "-c", "crontab -l > tmp_cron"],
                 [
                     "sh",
                     "-c",
-                    r'echo "{}" >> tmp_cron'.format(crontab_entry),
+                    'echo "{}" >> tmp_cron'.format(crontab_entry.replace('"', '\\"')),
                 ],
                 ["crontab", "tmp_cron"],
                 ["rm", "tmp_cron"],
