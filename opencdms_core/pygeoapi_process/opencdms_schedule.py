@@ -19,7 +19,7 @@
 #
 ###############################################################################
 __version__ = "0.0.1"
-
+import json
 import logging
 import subprocess
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
@@ -85,15 +85,19 @@ PROCESS_METADATA = {
     },
     "example": {
         "inputs": {
-            "command": (
-                'curl -X POST'
-                ' http://localhost:5000/processes/opencdms_backup/execution'
-                r' -H \"accept: application/json\" -H \"Content-Type:'
-                r' application/json\" -d \'{\"inputs\": {\"deployment_key\":'
-                r' \"test-database\",\"output_dir\":'
-                r' \"/home/faysal/PycharmProjects/opencdms-backup\"},\"mode\":'
-                r' \"async\"}\''
-            ),
+            "command": """
+            curl -X 'POST' \
+              'http://localhost:5000/processes/opencdms_backup/execution' \
+              -H 'accept: application/json' \
+              -H 'Content-Type: application/json' \
+              -d '{
+              "inputs": {
+                "deployment_key": "test-database",
+                "output_dir": "/home/faysal/PycharmProjects/opencdms-backup"
+              },
+              "mode": "async"
+            }'
+            """,
             "cron_expression": "* * * * *",
         }
     },
@@ -126,12 +130,15 @@ class OpenCDMSSchedule(BaseProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
 
     def execute(self, data):
+        print(data["command"])
         mimetype = "application/json"
         try:
             cron_expression = data.get("cron_expression", "00 00 * * *")
             command = data["command"]
 
-            crontab_entry = f"{cron_expression} {command}"
+            crontab_entry = r"{} {}".format(cron_expression, command)
+
+            print(crontab_entry)
 
             if crontab_entry in existing_cron_jobs():
                 raise ProcessorExecuteError(
@@ -143,7 +150,7 @@ class OpenCDMSSchedule(BaseProcessor):
                 [
                     "sh",
                     "-c",
-                    f'echo "{crontab_entry}" >> tmp_cron',
+                    r'echo "{}" >> tmp_cron'.format(crontab_entry),
                 ],
                 ["crontab", "tmp_cron"],
                 ["rm", "tmp_cron"],

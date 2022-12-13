@@ -343,8 +343,8 @@ paths:
               inputs:
                 command: 'curl -X POST http://localhost:5000/processes/opencdms_backup/execution
                   -H "accept: application/json" -H "Content-Type: application/json"
-                  -d ''{"inputs": {"deployment_key": "test-database","output_dir":
-                  "/home/faysal/PycharmProjects/opencdms-backup"},"mode": "async"}'''
+                  -d {"inputs": {"deployment_key": "test-database", "output_dir":
+                  "/home/faysal/PycharmProjects/opencdms-backup"}, "mode": "async"}'
                 cron_expression: '* * * * *'
             schema:
               $ref: https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/execute.yaml
