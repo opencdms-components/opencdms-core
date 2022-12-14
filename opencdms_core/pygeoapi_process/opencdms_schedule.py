@@ -164,7 +164,7 @@ class OpenCDMSSchedule(BaseProcessor):
                 stdout, stderr = process.communicate()
                 logging.info(stdout.decode("utf-8"))
                 logging.info(stderr.decode("utf-8"))
-                if stderr:
+                if stderr and not stderr.decode("utf-8").strip().startswith("no crontab"):
                     output = {"message": "Failed scheduling process."}
                     break
 
