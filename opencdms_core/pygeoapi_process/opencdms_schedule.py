@@ -130,6 +130,34 @@ class OpenCDMSSchedule(BaseProcessor):
         super().__init__(processor_def, PROCESS_METADATA)
 
     def execute(self, data):
+        """
+        This method is invoked by pygeoapi when this class is set as a `process` type
+        resource in pygeoapi config file.
+
+        :param data: It is the value of `inputs` passed in payload. For a payload
+        {
+            "inputs": {
+                "command": "echo Hello World!",
+                "cron_expression": "* * * * *"
+            }
+        }
+        the value of data is
+        {
+            "command": "echo Hello World!",
+            "cron_expression": "* * * * *"
+        }
+
+        >>> opencdms_schedule = OpenCDMSSchedule({"name": "opencdms-schedule"})
+        >>> opencdms_schedule.execute({
+        ...    "command": "echo Hello World!",
+        ...    "cron_expression": "* * * * *"
+        ... })
+        ...
+        ('application/json', {'message': 'Process scheduled successfully.', 'crontab_entry': '* * * * * echo Hello World!'})
+
+        :return: media_type, json
+        """
+
         mimetype = "application/json"
         try:
             cron_expression = data.get("cron_expression", "00 00 * * *")
