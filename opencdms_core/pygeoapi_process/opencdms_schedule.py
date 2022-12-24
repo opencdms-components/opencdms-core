@@ -147,10 +147,10 @@ class OpenCDMSSchedule(BaseProcessor):
             "cron_expression": "* * * * *"
         }
 
-        >>> from unittest import mock
-        >>> subprocess.Popen = mock.MagicMock()
-        >>> subprocess.Popen().communicate = mock.MagicMock()
-        >>> subprocess.Popen().communicate.return_value = b'', b'' # Please disregard till this line. These are necessary steps to avoid modifying user's cron jobs. Please refer to https://docs.python.org/3/library/unittest.mock.html if you need more clarification.
+        .. >>> from unittest import mock
+        .. >>> subprocess.Popen = mock.MagicMock()
+        .. >>> subprocess.Popen().communicate = mock.MagicMock()
+        .. >>> subprocess.Popen().communicate.return_value = b'', b'' # Please disregard till this line. These are necessary steps to avoid modifying user's cron jobs. Please refer to https://docs.python.org/3/library/unittest.mock.html if you need more clarification.
         >>> opencdms_schedule = OpenCDMSSchedule({"name": "opencdms-schedule"}) # In practice, you would never have to write this line, pygeoapi will take care of this behind the scene
         >>> opencdms_schedule.execute({ # this line will also be invoked when you make a post request to the URL where this process is exposed
         ...    "command": "echo Hello World!",
